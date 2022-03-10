@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+
+{% block title %}Packages{% endblock %}
+
+{% block content %}
+<div class="wrapper pageheader">
+    <h1>Packages</h1>
+    <p>Here are current packages in the system: </p>
+    <ul>
+    {% for package in packages %}
+        <li>
+            <span class="package-name">{{ package.name }}</span>
+            -
+            <span class="package-desc">{{ package.description }}</span>
+            -
+            <span class="package-downloads-count">{{ package.downloads_count }} download(s)</span>
+        </li>
+    {% endfor %}
+    </ul>
+</div>
+{% endblock %}
