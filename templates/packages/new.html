@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{% block title %}New Package{% endblock %}
+
+{% block content %}
+<h1>New Package</h1>
+
+<form action="/packages/create" method="POST">
+    <p>
+        <label for="name">Package Name:</label>
+        <input type="text" name="name" value="{{ form.name.value }}">
+        {% if form.name.errors | length > 0 %}
+            {{ form.name.errors }}
+        {% endif %}
+    </p>
+
+    <p>
+        <label for="description">Description:</label>
+        <input name="description" value="{{ form.description.value }}">
+        {% if form.description.errors | length > 0 %}
+            {{ form.description.errors }}
+        {% endif %}
+    </p>
+
+    <button type="submit">Create Package</button>
+</form>
+{% endblock %}

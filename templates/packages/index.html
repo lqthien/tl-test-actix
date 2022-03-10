@@ -14,8 +14,13 @@
             <span class="package-desc">{{ package.description }}</span>
             -
             <span class="package-downloads-count">{{ package.downloads_count }} download(s)</span>
+            ----
+            <span class="package-download"><a href="{{package.id}}/download">Download</a></span>
         </li>
     {% endfor %}
     </ul>
+    <div>
+        <a href="new">Add New Package</a>
+    </div>
 </div>
 {% endblock %}
