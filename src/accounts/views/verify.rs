@@ -4,7 +4,7 @@ use jelly::prelude::*;
 use jelly::request::DatabasePool;
 use jelly::Result;
 
-use crate::accounts::views::utils::validate_token;
+// use crate::accounts::views::utils::validate_token;
 use crate::accounts::Account;
 
 /// Just renders a standard "Check your email and verify" page.
@@ -21,19 +21,20 @@ pub async fn with_token(
     request: HttpRequest,
     Path((uidb64, ts, token)): Path<(String, String, String)>,
 ) -> Result<HttpResponse> {
-    if let Ok(account) = validate_token(&request, &uidb64, &ts, &token).await {
-        let db = request.db_pool()?;
-        Account::mark_verified(account.id, db).await?;
+    // if let Ok(account) = validate_token(&request, &uidb64, &ts, &token).await {
+    //     let db = request.db_pool()?;
+    //     Account::mark_verified(account.id, db).await?;
 
-        request.set_user(User {
-            id: account.id,
-            name: account.name,
-            is_admin: account.is_admin,
-            is_anonymous: false,
-        })?;
+    //     request.set_user(User {
+    //         id: account.id,
+    //         name: account.name,
+    //         is_admin: account.is_admin,
+    //         is_anonymous: false,
+    //     })?;
 
-        return request.redirect("/dashboard/");
-    }
+    //     return request.redirect("/dashboard/");
+    // }
 
-    return request.render(200, "accounts/invalid_token.html", Context::new());
+    // return request.render(200, "accounts/invalid_token.html", Context::new());
+    request.redirect("/packages/")
 }

@@ -36,19 +36,19 @@ impl Job for SendWelcomeAccountEmail {
 
     fn run(self, state: JobState) -> Self::Future {
         Box::pin(async move {
-            let (name, email) = Account::fetch_email(self.to, &state.pool)
-                .await
-                .map_err(|e| anyhow!("Error fetching user name/email: {:?}", e))?;
+            // let (name, email) = Account::fetch_email(self.to, &state.pool)
+            //     .await
+            //     .map_err(|e| anyhow!("Error fetching user name/email: {:?}", e))?;
 
-            let email = Email::new(
-                "email/welcome",
-                &[email],
-                "Welcome to the service",
-                build_context(&name),
-                state.templates,
-            );
+            // let email = Email::new(
+            //     "email/welcome",
+            //     &[email],
+            //     "Welcome to the service",
+            //     build_context(&name),
+            //     state.templates,
+            // );
 
-            email?.send()?;
+            // email?.send()?;
 
             Ok(())
         })

@@ -31,30 +31,30 @@ impl Job for SendVerifyAccountEmail {
 
     fn run(self, state: JobState) -> Self::Future {
         Box::pin(async move {
-            let account = Account::get(self.to, &state.pool)
-                .await
-                .map_err(|e| anyhow!("Error fetching account for verification: {:?}", e))?;
+            // let account = Account::get(self.to, &state.pool)
+            //     .await
+            //     .map_err(|e| anyhow!("Error fetching account for verification: {:?}", e))?;
 
-            let domain = env::var("JELLY_DOMAIN").expect("No JELLY_DOMAIN value set!");
+            // let domain = env::var("JELLY_DOMAIN").expect("No JELLY_DOMAIN value set!");
 
-            let verify_url = format!(
-                "{}/accounts/verify/{}-{}/",
-                domain,
-                base64_url::encode(&format!("{}", account.id)),
-                account
-                    .create_reset_token()
-                    .map_err(|e| { anyhow!("Error creating verification token: {:?}", e) })?
-            );
+            // let verify_url = format!(
+            //     "{}/accounts/verify/{}-{}/",
+            //     domain,
+            //     base64_url::encode(&format!("{}", account.id)),
+            //     account
+            //         .create_reset_token()
+            //         .map_err(|e| { anyhow!("Error creating verification token: {:?}", e) })?
+            // );
 
-            let email = Email::new(
-                "email/verify-account",
-                &[account.email],
-                "Verify your new account",
-                build_context(&verify_url),
-                state.templates,
-            );
+            // let email = Email::new(
+            //     "email/verify-account",
+            //     &[account.email],
+            //     "Verify your new account",
+            //     build_context(&verify_url),
+            //     state.templates,
+            // );
 
-            email?.send()?;
+            // email?.send()?;
 
             Ok(())
         })

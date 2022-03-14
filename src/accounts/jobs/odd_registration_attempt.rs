@@ -45,24 +45,24 @@ impl Job for SendAccountOddRegisterAttemptEmail {
 
     fn run(self, state: JobState) -> Self::Future {
         Box::pin(async move {
-            let name = Account::fetch_name_from_email(&self.to, &state.pool)
-                .await
-                .map_err(|e| {
-                    anyhow!(
-                        "Error fetching user name for odd registration attempt: {:?}",
-                        e
-                    )
-                })?;
+            // let name = Account::fetch_name_from_email(&self.to, &state.pool)
+            //     .await
+            //     .map_err(|e| {
+            //         anyhow!(
+            //             "Error fetching user name for odd registration attempt: {:?}",
+            //             e
+            //         )
+            //     })?;
 
-            let email = Email::new(
-                "email/odd-registration-attempt",
-                &[self.to],
-                "Did you want to reset your password?",
-                build_context(&name),
-                state.templates,
-            );
+            // let email = Email::new(
+            //     "email/odd-registration-attempt",
+            //     &[self.to],
+            //     "Did you want to reset your password?",
+            //     build_context(&name),
+            //     state.templates,
+            // );
 
-            email?.send()?;
+            // email?.send()?;
 
             Ok(())
         })

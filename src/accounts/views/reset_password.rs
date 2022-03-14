@@ -8,7 +8,7 @@ use jelly::Result;
 
 use crate::accounts::forms::{ChangePasswordForm, EmailForm};
 use crate::accounts::jobs::{SendPasswordWasResetEmail, SendResetPasswordEmail};
-use crate::accounts::views::utils::validate_token;
+// use crate::accounts::views::utils::validate_token;
 use crate::accounts::Account;
 
 /// Just renders a standard "Enter Your Email" password reset page.
@@ -56,18 +56,7 @@ pub async fn with_token(
     request: HttpRequest,
     Path((uidb64, ts, token)): Path<(String, String, String)>,
 ) -> Result<HttpResponse> {
-    if let Ok(_account) = validate_token(&request, &uidb64, &ts, &token).await {
-        return request.render(200, "accounts/reset_password/change_password.html", {
-            let mut context = Context::new();
-            context.insert("form", &ChangePasswordForm::default());
-            context.insert("uidb64", &uidb64);
-            context.insert("ts", &ts);
-            context.insert("token", &token);
-            context
-        });
-    }
-
-    return request.render(200, "accounts/invalid_token.html", Context::new());
+    request.redirect("/packages/")
 }
 
 /// Verifies the password is fine, and if so, signs the user in and redirects
@@ -77,44 +66,45 @@ pub async fn reset(
     Path((uidb64, ts, token)): Path<(String, String, String)>,
     form: Form<ChangePasswordForm>,
 ) -> Result<HttpResponse> {
-    let mut form = form.into_inner();
+    // let mut form = form.into_inner();
 
-    if let Ok(account) = validate_token(&request, &uidb64, &ts, &token).await {
-        // Note! This is a case where we need to fetch the user ahead of form validation.
-        // While it would be nice to avoid the DB hit, validating that their password is secure
-        // requires pulling some account values...
-        form.name = Some(account.name.clone());
-        form.email = Some(account.email.clone());
+    // if let Ok(account) = validate_token(&request, &uidb64, &ts, &token).await {
+    //     // Note! This is a case where we need to fetch the user ahead of form validation.
+    //     // While it would be nice to avoid the DB hit, validating that their password is secure
+    //     // requires pulling some account values...
+    //     form.name = Some(account.name.clone());
+    //     form.email = Some(account.email.clone());
 
-        if !form.is_valid() {
-            return request.render(200, "accounts/reset_password/change_password.html", {
-                let mut context = Context::new();
-                context.insert("form", &form);
-                context
-            });
-        }
+    //     if !form.is_valid() {
+    //         return request.render(200, "accounts/reset_password/change_password.html", {
+    //             let mut context = Context::new();
+    //             context.insert("form", &form);
+    //             context
+    //         });
+    //     }
 
-        let pool = request.db_pool()?;
-        Account::update_password_and_last_login(account.id, &form.password, pool).await?;
+    //     let pool = request.db_pool()?;
+    //     Account::update_password_and_last_login(account.id, &form.password, pool).await?;
 
-        request.queue(SendPasswordWasResetEmail {
-            to: account.email.clone(),
-        })?;
+    //     request.queue(SendPasswordWasResetEmail {
+    //         to: account.email.clone(),
+    //     })?;
 
-        request.set_user(User {
-            id: account.id,
-            name: account.name,
-            is_admin: account.is_admin,
-            is_anonymous: false,
-        })?;
+    //     request.set_user(User {
+    //         id: account.id,
+    //         name: account.name,
+    //         is_admin: account.is_admin,
+    //         is_anonymous: false,
+    //     })?;
 
-        request.flash("Password Reset", "Your password was successfully reset.")?;
-        return request.redirect("/dashboard/");
-    }
+    //     request.flash("Password Reset", "Your password was successfully reset.")?;
+    //     return request.redirect("/dashboard/");
+    // }
 
-    request.render(200, "accounts/reset_password/change_password.html", {
-        let mut context = Context::new();
-        context.insert("form", &form);
-        context
-    })
+    // request.render(200, "accounts/reset_password/change_password.html", {
+    //     let mut context = Context::new();
+    //     context.insert("form", &form);
+    //     context
+    // })
+    request.redirect("/packages/")
 }
