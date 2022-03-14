@@ -54,8 +54,10 @@ impl Server {
         Email::check_conf();
 
         let bind = env::var("BIND_TO").expect("BIND_TO not set!");
-        let port = env::var("PORT").expect("PORT not set!");
-        let bind_port = format!("{}:{}", bind, port);
+        let port = env::var("PORT")
+            .unwrap_or_else(|_| "3000".to_string())
+            .parse()
+            .expect("PORT must be a number");
 
         let _root_domain = env::var("JELLY_DOMAIN").expect("JELLY_DOMAIN not set!");
 
@@ -133,7 +135,7 @@ impl Server {
         .backlog(8192)
         .shutdown_timeout(0)
         .workers(4)
-        .bind(&bind_port)?
+        .bind((bind, port))?
         .run();
 
         Ok(server)
