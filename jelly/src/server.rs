@@ -54,6 +54,9 @@ impl Server {
         Email::check_conf();
 
         let bind = env::var("BIND_TO").expect("BIND_TO not set!");
+        let port = env::var("PORT").expect("PORT not set!");
+        let bind_port = format!("{}:{}", bind, port);
+
         let _root_domain = env::var("JELLY_DOMAIN").expect("JELLY_DOMAIN not set!");
 
         #[cfg(feature = "production")]
@@ -130,7 +133,7 @@ impl Server {
         .backlog(8192)
         .shutdown_timeout(0)
         .workers(4)
-        .bind(&bind)?
+        .bind(&bind_port)?
         .run();
 
         Ok(server)
