@@ -19,13 +19,14 @@ jelly = { path = "jelly" }
 log = "*"
 serde = { version = "1" }
 actix-files = "0.5.0"
+diesel = { version = "1.4.8", features = ["postgres"] }
+dotenv = "0.15.0"
 
 [features]
 default = ["jelly/template_watcher", "jelly/static"]
 production = ["jelly/production"]
 [dev-dependencies]
 anyhow = "1.0.42"
-dotenv = "0.15.0"
 env_logger = "0.9.0"
 lazy_static = "1.4.0"
 test-log = "0.2.8"

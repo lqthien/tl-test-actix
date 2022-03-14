@@ -3,94 +3,64 @@ use jelly::error::Error;
 use jelly::serde::{Deserialize, Serialize};
 use jelly::sqlx::{self, postgres::PgPool};
 
-use crate::packages::forms::NewPackageForm;
+use diesel;
+use diesel::prelude::*;
+
+use crate::schema::packages::dsl::*;
+use crate::schema::packages;
+use crate::packages::forms::*;
 
 /// A Package Object.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Queryable, Serialize, Deserialize, Identifiable, AsChangeset)]
 pub struct Package {
     pub id: i32,
     pub name: String,
     pub description: String,
-    pub downloads_count: i32,
-    pub created: DateTime<Utc>,
-    pub updated: DateTime<Utc>,
+    pub downloads_count: i32
 }
 
 impl Package {
-    pub async fn get(uid: i32, pool: &PgPool) -> Result<Self, Error> {
-        Ok(sqlx::query_as_unchecked!(
-            Package,
-            "
-            SELECT
-                id, name, description, downloads_count,
-                created, updated
-            FROM packages WHERE id = $1
-        ",
-            uid
-        )
-        .fetch_one(pool)
-        .await?)
+
+    pub fn get_all(connection: &PgConnection) -> Vec<Self> {
+        let results = packages
+        .load::<Package>(connection)
+        .expect("Error loading packages");
+        
+        results
     }
 
-    pub async fn get_all(pool: &PgPool) -> Result<Vec<Self>, Error> {
-        Ok(sqlx::query_as_unchecked!(
-            Package,
-            "
-            SELECT
-                id, name, description, downloads_count,
-                created, updated
-            FROM packages
-        "
-        )
-        .fetch_all(pool)
-        .await?)
+    pub fn create<'a>(form: &NewPackageForm, connection: &PgConnection) -> Package {
+        let new_package = NewPackage {
+            name: &form.name.value,
+            description: &form.description.value
+        };
+    
+        diesel::insert_into(packages::table)
+            .values(&new_package)
+            .get_result(connection)
+            .expect("Error saving new package")
     }
 
-    pub async fn create(form: &NewPackageForm, pool: &PgPool) -> Result<i32, Error> {
-        Ok(sqlx::query!(
-            "
-            INSERT INTO packages (name, description)
-            VALUES ($1, $2)
-            RETURNING id
-        ",
-            form.name.value,
-            form.description.value
-        )
-        .fetch_one(pool)
-        .await?
-        .id)
+    pub fn update(self: &Self, connection: &PgConnection) -> Package {
+        self.save_changes(connection).unwrap()
     }
 
-    pub async fn update(self: &Self, pool: &PgPool) -> Result<i32, Error> {
-        Ok(sqlx::query!(
-            "
-            UPDATE packages
-            SET name = $1, description = $2, downloads_count = $3
-            WHERE id = $4
-            RETURNING id
-        ",
-            self.name,
-            self.description,
-            self.downloads_count,
-            self.id
-        )
-        .fetch_one(pool)
-        .await?
-        .id)
+    pub fn find(uid: i32, connection: &PgConnection) -> Package {
+        return packages::table.find(uid).first::<Package>(connection).expect("Error loading package");
     }
 
-    pub async fn create_sample(pool: &PgPool) -> Result<i32, Error> {
-        Ok(sqlx::query!(
-            "
-            INSERT INTO packages (name, description)
-            VALUES ($1, $2)
-            RETURNING id
-        ",
-            "Sample Package 1",
-            "Sample Description 1"
-        )
-        .fetch_one(pool)
-        .await?
-        .id)
-    }
+    // pub async fn create_sample(pool: &PgPool) -> Result<i32, Error> {
+    //     Ok(sqlx::query!(
+    //         "
+    //         INSERT INTO packages (name, description)
+    //         VALUES ($1, $2)
+    //         RETURNING id
+    //     ",
+    //         "Sample Package 1",
+    //         "Sample Description 1"
+    //     )
+    //     .fetch_one(pool)
+    //     .await?
+    //     .id)
+    // }
 }

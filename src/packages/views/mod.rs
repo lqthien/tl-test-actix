@@ -3,25 +3,20 @@ use jelly::actix_web::{web::Form, HttpRequest, web::Path};
 use jelly::prelude::*;
 use jelly::Result;
 
+use crate::establish_connection;
+
 use crate::packages::Package;
 use crate::packages::forms::NewPackageForm;
 
 /// Returns a list of packages in the system.
 pub async fn index(request: HttpRequest) -> Result<HttpResponse> {
-    let db = request.db_pool()?;
-    let packages: Vec<Package> = match Package::get_all(db).await {
-        Ok(packages) => {
-            packages
-        }
-        Err(_) => {
-            Package::create_sample(db).await?;
-            Package::get_all(db).await?
-        }
-    };
+    let connection = establish_connection();
+
+    let all_packages = Package::get_all(&connection);
 
     return request.render(200, "packages/index.html", {
         let mut context = Context::new();
-        context.insert("packages", &packages);
+        context.insert("packages", &all_packages);
         context
     })
 }
@@ -49,21 +44,10 @@ pub async fn create(
         });
     }
 
-    let db = request.db_pool()?;
-    match Package::create(&form, db).await {
-        Ok(_id) => {
-            request.redirect("/packages/")
-        }
+    let connection = establish_connection();
+    _ = Package::create(&form, &connection);
 
-        Err(e) => {
-            error!("Error with creating package: {:?}", e);
-            request.render(400, "packages/new.html", {
-                let mut ctx = Context::new();
-                ctx.insert("form", &form);
-                ctx
-            })
-        }
-    }
+    request.redirect("/packages/")
 }
 
 // Simulates a download and increases download count for specified package
@@ -71,19 +55,13 @@ pub async fn download(
     request: HttpRequest,
     Path(id): Path<String>,
 ) -> Result<HttpResponse> {
-    let db = request.db_pool()?;
+    let connection = establish_connection();
     let uid = id.parse::<i32>().unwrap();
-    let mut package = Package::get(uid, db).await?;
+
+    let mut package = Package::find(uid, &connection);
     package.downloads_count += 1;
 
-    match package.update(db).await {
-        Ok(_id) => {
-            request.redirect("/packages/")
-        }
+    package.update(&connection);
 
-        Err(e) => {
-            error!("Error with updating package: {:?}", e);
-            request.redirect("/packages/")
-        }
-    }
+    request.redirect("/packages/")
 }
