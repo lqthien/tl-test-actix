@@ -13,11 +13,10 @@ jobs:
           POSTGRES_HOST_AUTH_METHOD: trust
     steps:
       - checkout
-      - run: cargo --version
       - run: cargo install diesel_cli --no-default-features --features "postgres"
-      - run:
-          name: Run Unit Tests
-          command: "cargo test --lib --features test -- --test-threads=1"
+      # - run:
+      #     name: Run Unit Tests
+      #     command: "cargo test --lib --features test -- --test-threads=1"
       - run:
           name: Setup test server for integration tests
           command: "DATABASE_URL=$DATABASE_URL_TEST diesel setup && PORT=17002 cargo run --features test"
@@ -28,21 +27,30 @@ jobs:
           name: Start chromedriver
           command: chromedriver --port=4444
           background: true
+      # - run:
+      #     name: Run Integration Tests
+      #     command: "cargo test --features test --test integration_tests -- --concurrency 1"
       - run:
-          name: Run Integration Tests
-          command: "cargo test --features test --test integration_tests -- --concurrency 1"
-  coverage:
-    machine: true
-    steps:
-      - checkout
+          name: Install tarpaulin
+          command: cargo install cargo-tarpaulin
       - run:
-          name: Coverage with docker
-          command: docker run --security-opt seccomp=unconfined -v "${PWD}:/volume" xd009642/tarpaulin
+          name: Test Unit, Integration and Generate report
+          command: >
+            cargo tarpaulin --implicit-test-threads --features test
+  #coverage:
+    #machine: true
+    #steps:
+      #- run:
+          #name: Coverage with docker
+          #command: >
+            #docker run --security-opt seccomp=unconfined
+            #-v ${PWD}:/volume xd009642/tarpaulin cargo tarpaulin -v --ciserver circle-ci
+            #--out Xml --all-features
 
-workflows:
-  build_and_test:
-    jobs:
-      - build
-      - coverage:
-          requires:
-            - build
+# workflows:
+#   build_and_test:
+#     jobs:
+#       - build
+      # - coverage:
+      #     requires:
+      #       - build
