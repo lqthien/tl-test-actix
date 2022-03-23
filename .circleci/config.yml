@@ -31,3 +31,18 @@ jobs:
       - run:
           name: Run Integration Tests
           command: "cargo test --features test --test integration_tests -- --concurrency 1"
+  coverage:
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: Coverage with docker
+          command: docker run --security-opt seccomp=unconfined -v "${PWD}:/volume" xd009642/tarpaulin
+
+workflows:
+  build_and_test:
+    jobs:
+      - build
+      - coverage:
+          requires:
+            - build
