@@ -1,58 +1,26 @@
 version: 2.1
 
-orbs:
-  browser-tools: circleci/browser-tools@1.1.3
-
 jobs:
   build:
-    docker:
-      - image: cimg/rust:1.59.0
-      - image: cimg/postgres:14.0
-        environment:
-          POSTGRES_USER: circleci
-          POSTGRES_HOST_AUTH_METHOD: trust
+    machine: true
     steps:
       - checkout
-      # - run: cargo --version
-      # - run: cargo install diesel_cli --no-default-features --features "postgres"
-      # - run:
-      #     name: Run Unit Tests
-      #     command: "cargo test --lib --features test -- --test-threads=1"
-      # - run:
-      #     name: Setup test server for integration tests
-      #     command: "DATABASE_URL=$DATABASE_URL_TEST diesel setup && PORT=17002 cargo run --features test"
-      #     background: true
-      # - browser-tools/install-chrome
-      # - browser-tools/install-chromedriver
-      # - run:
-      #     name: Start chromedriver
-      #     command: chromedriver --port=4444
-      #     background: true
-      # - run:
-      #     name: Run Integration Tests
-      #     command: "cargo test --features test --test integration_tests -- --concurrency 1"
       - run:
-          name: Pull xd009642/tarpaulin
-          command: docker pull xd009642/tarpaulin:latest
+          name: Download rustup
+          command: |
+            wget https://static.rust-lang.org/rustup/dist/x86_64-unknown-linux-gnu/rustup-init
+            chmod +x rustup-init
       - run:
-          name: Generate report
-          command: >
-            docker run --security-opt seccomp=unconfined -v "${PWD}:/volume" xd009642/tarpaulin
-            cargo tarpaulin -v --ciserver circle-ci --out Xml --all-features
-  #coverage:
-    #machine: true
-    #steps:
-      #- run:
-          #name: Coverage with docker
-          #command: >
-            #docker run --security-opt seccomp=unconfined
-            #-v ${PWD}:/volume xd009642/tarpaulin cargo tarpaulin -v --ciserver circle-ci
-            #--out Xml --all-features
-
-workflows:
-  build_and_test:
-    jobs:
-      - build
-      # - coverage:
-      #     requires:
-      #       - build
+          name: Install Rust
+          command: |
+            ./rustup-init -y --no-modify-path --default-toolchain nightly
+            rm rustup-init
+            echo 'export PATH=$HOME/.cargo/bin:$PATH' >> $BASH_ENV
+      - run:
+          name: Install Tarpaulin
+          command: cargo install cargo-tarpaulin
+          environment:
+            RUSTFLAGS: --cfg procmacro2_semver_exempt
+      - run:
+          name: Generate coverage report
+          command: docker run -e DATABASE_URL_TEST_BASE=$DATABASE_URL_TEST_BASE --security-opt seccomp=unconfined -v "${PWD}:/volume" xd009642/tarpaulin
