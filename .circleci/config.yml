@@ -22,5 +22,9 @@ jobs:
           environment:
             RUSTFLAGS: --cfg procmacro2_semver_exempt
       - run:
+          name: Run Postgres Docker
+          command: docker run -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_USER=circleci circleci/postgres:13.0
+          background: true
+      - run:
           name: Generate coverage report
-          command: docker run -e DATABASE_URL_TEST_BASE=$DATABASE_URL_TEST_BASE --security-opt seccomp=unconfined -v "${PWD}:/volume" xd009642/tarpaulin
+          command: docker run -e DATABASE_URL_TEST_BASE=$DATABASE_URL_TEST_BASE -e DATABASE_URL_TEST=$DATABASE_URL_TEST --security-opt seccomp=unconfined -v "${PWD}:/volume" xd009642/tarpaulin
