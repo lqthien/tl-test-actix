@@ -7,7 +7,6 @@ jobs:
   build:
     docker:
       - image: cimg/rust:1.59.0
-      - image: xd009642/tarpaulin
       - image: cimg/postgres:14.0
         environment:
           POSTGRES_USER: circleci
@@ -47,10 +46,10 @@ jobs:
             #-v ${PWD}:/volume xd009642/tarpaulin cargo tarpaulin -v --ciserver circle-ci
             #--out Xml --all-features
 
-workflows:
-  build_and_test:
-    jobs:
-      - build
+# workflows:
+#   build_and_test:
+#     jobs:
+#       - build
       # - coverage:
       #     requires:
       #       - build
