@@ -1,0 +1,126 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug ALL unit tests in library 'mainlib'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=movey_app",
+                    "--features=test"
+                ],
+                "filter": {
+                    "name": "mainlib",
+                    "kind": "lib"
+                }
+            },
+            "args": ["--test-threads=1"],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug specific unit test in library 'mylib'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=movey_app",
+                    "--features=test"
+                ],
+                "filter": {
+                    "name": "mainlib",
+                    "kind": "lib"
+                }
+            },
+            "args": [ "test_items_create", "--test-threads=1" ],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'webserver'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=webserver",
+                    "--package=movey_app"
+                ],
+                "filter": {
+                    "name": "webserver",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'integration_tests'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=integration_tests",
+                    "--package=movey_app",
+                    "--features=test"
+                ],
+                "filter": {
+                    "name": "integration_tests",
+                    "kind": "test"
+                }
+            },
+            "args": ["--concurrency=1"],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug integration test 'templates'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=templates",
+                    "--package=movey_app",
+                    "--features=test"
+                ],
+                "filter": {
+                    "name": "templates",
+                    "kind": "test"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug specific integration test",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--test=integration_tests",
+                    "--package=movey_app",
+                    "--features=test"
+                ],
+                "filter": {
+                    "name": "integration_tests",
+                    "kind": "test"
+                }
+            },
+            "args": ["-t=@wip", "--concurrency=1"],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

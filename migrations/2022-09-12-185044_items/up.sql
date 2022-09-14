@@ -6,7 +6,5 @@ create table if not exists items (
     updated timestamp with time zone not null default now()
 );
 
-create unique index accounts_unique_lower_email_idx on accounts (lower(email));
-
-create trigger user_updated before insert or update on accounts
+create trigger user_updated before insert or update on items
 for each row execute procedure update_timestamp();
