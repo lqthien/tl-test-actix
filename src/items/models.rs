@@ -11,8 +11,9 @@ use jelly::error::Error;
 use jelly::serde::{Deserialize, Serialize};
 use jelly::DieselPgPool;
 
-use crate::schema::items::dsl::*;
 use crate::schema::items;
+use crate::schema::items::dsl::*;
+
 
 use super::forms::{LoginForm, NewAccountForm};
 
@@ -31,26 +32,20 @@ impl Item {
     }
 
     pub async fn get_by_id(id_: i32, pool: &DieselPgPool) -> Result<Self, Error> {
-        return Ok(Self {
-            id: 0,
-            uid: 0,
-            name: "".to_string(),
-            created: Utc::now(),
-            updated: Utc::now(),
-        });
+        let connection = pool.get()?;
+        let result = items
+            .find(id_)
+            .first::<Item>(&connection)?;
+        return Ok(result);
     }
 
     pub async fn create(dbpool: &DieselPgPool, uid_: i32, name_: String) -> Result<Self, Error> {
         let conn = dbpool.get().unwrap();
-        let item = Item {
-            id: 0,
-            uid: uid_,
-            name: name_,
-            created: Utc::now(),
-            updated: Utc::now(),
-        };
+
+        let newItem = NewItem::from_uid_name(uid_, name_);
+
         let item = diesel::insert_into(items::table)
-            .values(&item)
+            .values(&newItem)
             .get_result(&conn)?;
         return Ok(item);
     } 
@@ -91,9 +86,12 @@ mod tests {
     async fn test_items_get_by_id() {
         crate::test::init();
         let _ctx = DatabaseTestContext::new();
+
         let uid = setup_user(None, None).await;
 
-        let item = Item::create(uid, "Test item".to_string()).await.unwrap();
+        
+
+        let item = Item::create(&DB_POOL, uid, "Test item".to_string()).await.unwrap();
         let get_item = Item::get_by_id(item.id, &DB_POOL).await.unwrap();
         assert_eq!(item.uid, uid);
     }
@@ -103,7 +101,7 @@ mod tests {
         crate::test::init();
         let _ctx = DatabaseTestContext::new();
         let uid = setup_user(None, None).await;
-        let item = Item::create(uid, "Test item".to_string()).await.unwrap();
+        let item = Item::create(&DB_POOL, uid, "Test item".to_string()).await.unwrap();
 
         let get_item = Item::get_by_id(item.id, &DB_POOL).await.unwrap();
         assert_eq!(item.name, "Test item");
@@ -134,5 +132,21 @@ mod tests {
         // let uid = Account::register(&form, &DB_POOL).await.unwrap();
         // let account = Account::get(uid, &DB_POOL).await.unwrap();
         // assert_eq!(account.email, "email@host.com");
+    }
+}
+
+#[derive(Insertable)]
+#[table_name="items"]
+pub struct NewItem {
+    pub uid: i32,
+    pub name: String
+}
+
+impl NewItem {
+    fn from_uid_name(uid_: i32, name_: String) -> Self {
+        return NewItem {
+            uid: uid_,
+            name: name_,
+        };
     }
 }
