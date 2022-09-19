@@ -15,26 +15,33 @@ use crate::schema::items;
 use crate::schema::items::dsl::*;
 
 
-use super::forms::{LoginForm, NewAccountForm};
+use super::forms::{ItemForm};
 
 #[derive(Debug, Serialize, Deserialize, Queryable, Identifiable, AsChangeset)]
 pub struct Item {
     pub id: i32,
-    pub uid: i32,
     pub name: String,
+    pub uid: i32,
     pub created: DateTime<Utc>,
     pub updated: DateTime<Utc>,
 }
 
 impl Item {
     pub async fn get_list_by_uid(uid_: i32, pool: &DieselPgPool) -> Result<Vec<Self>, Error> {
-        return Ok(vec![]);
+        let connection = pool.get()?;
+
+        let get_items = items
+        .filter(uid.eq(uid_))
+        .select((id,  name, uid, created, updated))
+        .load::<Self>(&connection)?;
+        Ok(get_items)
     }
 
     pub async fn get_by_id(id_: i32, pool: &DieselPgPool) -> Result<Self, Error> {
         let connection = pool.get()?;
         let result = items
             .find(id_)
+            .select((id, name, uid, created, updated))
             .first::<Item>(&connection)?;
         return Ok(result);
     }
@@ -46,7 +53,7 @@ impl Item {
 
         let item = diesel::insert_into(items::table)
             .values(&newItem)
-            .get_result(&conn)?;
+            .get_result::<(Item)>(&conn)?;
         return Ok(item);
     } 
 }
@@ -117,10 +124,21 @@ mod tests {
         let uid = setup_user(None, None).await;
         
         let result = super::Item::get_list_by_uid(uid, &DB_POOL).await;
-        
+
         assert!(result.is_ok());
 
         assert!(result.unwrap().len() == 0);
+
+
+        let item = Item::create(&DB_POOL, uid, "Test item".to_string()).await.unwrap();
+
+        let result = super::Item::get_list_by_uid(uid, &DB_POOL).await;
+
+        assert!(result.is_ok());
+        
+        let result_unwrap = result.unwrap();
+        assert!(result_unwrap.len() == 1);
+        assert!(result_unwrap[0].name == "Test item");
 
         // crate::test::init();
         // let _ctx = DatabaseTestContext::new();

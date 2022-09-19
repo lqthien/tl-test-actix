@@ -29,8 +29,8 @@ diesel::table! {
 diesel::table! {
     items (id) {
         id -> Int4,
-        uid -> Int4,
         name -> Text,
+        uid -> Int4,
         created -> Timestamptz,
         updated -> Timestamptz,
     }

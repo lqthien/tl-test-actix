@@ -34,6 +34,7 @@ pub async fn main() -> io::Result<()> {
         .register_jobs(accounts::jobs::configure)
         .register_service(dashboard::configure)
         .register_service(api::configure)
+        
         .run()
         .await?
         .await

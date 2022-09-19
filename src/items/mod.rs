@@ -9,10 +9,11 @@ pub mod views;
 
 pub fn configure(config: &mut ServiceConfig) {
     config.service(
-        scope("/items/")
+        scope("/items")
             .service(
                 resource("/")
                     .route(get().to(views::list::index))
+                    .route(post().to(views::create::create_item)),
             )
     );
 }

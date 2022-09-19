@@ -25,10 +25,16 @@ pub async fn index(request: HttpRequest) -> Result<HttpResponse> {
         return request.redirect("/home");
     }
 
-    return request.render(200, "items/index.html", {
+    let user = request.user()?;
+    let db_pool = request.db_pool()?;
+    let items = Item::get_list_by_uid(user.id, db_pool).await?;
+
+    request.render(200, "items/list.html", {
         let mut ctx = Context::new();
+        ctx.insert("items", &items);
         ctx
-    });
+    })
+
 
 }
 
